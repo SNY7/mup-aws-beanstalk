@@ -99,6 +99,17 @@ export function injectFiles(api, name, version, appConfig) {
       copy(sourcePath, destPath);
     });
   }
+
+  const customPlatformConfigPath = api.resolvePath(api.getBasePath(), `${path}/.platform`);
+  const customPlatformConfig = fs.existsSync(customPlatformConfigPath);
+  if (customPlatformConfig) {
+    console.log('  Copying custom config files from .platform');
+    fs.readdirSync(customPlatformConfigPath).forEach((file) => {
+      sourcePath = api.resolvePath(customPlatformConfigPath, file);
+      destPath = api.resolvePath(bundlePath, `bundle/.platform/${file}`);
+      copy(sourcePath, destPath);
+    });
+  }
 }
 
 export function archiveApp(buildLocation, api) {
