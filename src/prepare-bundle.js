@@ -1,6 +1,7 @@
 import archiver from 'archiver';
 import fs from 'fs';
 import ejs from 'ejs';
+import path from 'path';
 import { round } from 'lodash';
 import { getNodeVersion, logStep, names } from './utils';
 
@@ -12,6 +13,28 @@ function copy(source, destination, vars = {}) {
   fs.writeFileSync(destination, contents);
 }
 
+export function copyFolderSync(src, dest) {
+  if (!fs.existsSync(src)) return;
+  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+
+  fs.readdirSync(src).forEach((dirent) => {
+    const [srcPath, destPath] = [src, dest].map(dirPath => path.join(dirPath, dirent));
+    const stat = fs.lstatSync(srcPath);
+
+    switch (true) {
+      case stat.isFile():
+        console.log(` ... copying  ${srcPath} ${destPath}`);
+        fs.copyFileSync(srcPath, destPath);
+        break;
+      case stat.isDirectory():
+        copyFolderSync(srcPath, destPath);
+        break;
+      default:
+        break;
+    }
+  });
+}
+
 export function injectFiles(api, name, version, appConfig) {
   const {
     yumPackages,
@@ -20,7 +43,7 @@ export function injectFiles(api, name, version, appConfig) {
     buildOptions,
     longEnvVars,
     additionalFiles,
-    path
+    path: appPath
   } = appConfig;
   const bundlePath = buildOptions.buildLocation;
   const {
@@ -44,6 +67,7 @@ export function injectFiles(api, name, version, appConfig) {
 
   try {
     fs.mkdirSync(api.resolvePath(bundlePath, 'bundle/.ebextensions'));
+    fs.mkdirSync(api.resolvePath(bundlePath, 'bundle/.platform/nginx/conf.d'), { recursive: true });
   } catch (e) {
     if (e.code !== 'EEXIST') {
       console.log(e);
@@ -58,6 +82,10 @@ export function injectFiles(api, name, version, appConfig) {
   sourcePath = api.resolvePath(__dirname, './assets/nginx.yaml');
   destPath = api.resolvePath(bundlePath, 'bundle/.ebextensions/nginx.config');
   copy(sourcePath, destPath, { forceSSL });
+
+  // sourcePath = api.resolvePath(__dirname, './assets/proxy.conf');
+  // destPath = api.resolvePath(bundlePath, 'bundle/.platform/nginx/conf.d/proxy.conf');
+  // fs.copyFileSync(sourcePath, destPath);
 
   if (yumPackages) {
     sourcePath = api.resolvePath(__dirname, './assets/packages.yaml');
@@ -89,10 +117,10 @@ export function injectFiles(api, name, version, appConfig) {
   destPath = api.resolvePath(bundlePath, 'bundle/health-check.js');
   copy(sourcePath, destPath);
 
-  const customConfigPath = api.resolvePath(api.getBasePath(), `${path}/.ebextensions`);
+  const customConfigPath = api.resolvePath(api.getBasePath(), `${appPath}/.ebextensions`);
   const customConfig = fs.existsSync(customConfigPath);
   if (customConfig) {
-    console.log('  Copying custom config files from .ebextensions');
+    console.log(`  Copying custom config files from ${appPath}/.ebextensions`);
     fs.readdirSync(customConfigPath).forEach((file) => {
       sourcePath = api.resolvePath(customConfigPath, file);
       destPath = api.resolvePath(bundlePath, `bundle/.ebextensions/${file}`);
@@ -100,16 +128,8 @@ export function injectFiles(api, name, version, appConfig) {
     });
   }
 
-  const customPlatformConfigPath = api.resolvePath(api.getBasePath(), `${path}/.platform`);
-  const customPlatformConfig = fs.existsSync(customPlatformConfigPath);
-  if (customPlatformConfig) {
-    console.log('  Copying custom config files from .platform');
-    fs.readdirSync(customPlatformConfigPath).forEach((file) => {
-      sourcePath = api.resolvePath(customPlatformConfigPath, file);
-      destPath = api.resolvePath(bundlePath, `bundle/.platform/${file}`);
-      copy(sourcePath, destPath);
-    });
-  }
+  console.log(`  Copying custom config files from ${appPath}/.platform`);
+  copyFolderSync(api.resolvePath(api.getBasePath(), `${appPath}/.platform`), api.resolvePath(bundlePath, 'bundle/.platform'));
 }
 
 export function archiveApp(buildLocation, api) {
