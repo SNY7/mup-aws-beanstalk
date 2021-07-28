@@ -48,7 +48,7 @@ export function createDesiredConfig(mupConfig, settings, longEnvVarsVersion) {
     }, {
       Namespace: 'aws:elasticbeanstalk:environment:process:default',
       OptionName: 'HealthCheckPath',
-      Value: '/aws-health-check-3984729847289743128904723'
+      Value: '/'
     }, {
       Namespace: 'aws:elasticbeanstalk:environment',
       OptionName: 'EnvironmentType',
