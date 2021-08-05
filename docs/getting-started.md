@@ -1,9 +1,11 @@
 ## Install
 
-You can install `mup` and `mup-aws-beanstalk` by running
+You can install `mup` and `@sny7/mup-aws-beanstalk` by running
 
 ```bash
-npm i -g mup mup-aws-beanstalk
+npm i -g mup @sny7/mup-aws-beanstalk
+OR
+yarn global add mup @sny7/mup-aws-beanstalk
 ```
 
 The AWS Beanstalk plugin requires Node 4 or newer and Meteor Up 1.3.5 or newer.
@@ -41,7 +43,7 @@ module.exports = {
         },
         minInstances: 1
     },
-    plugins: ['mup-aws-beanstalk']
+    plugins: ['@sny7/mup-aws-beanstalk']
 };
 ```
 
@@ -64,6 +66,7 @@ You can select `Add user to group` and create a new group. The group should have
 - `AWSElasticBeanstalkFullAccess`
 - `IAMFullAccess` This is used to create the roles and Instance Profiles needed by Elastic Beanstalk. After the first deploy, you can replace it with `IAMReadOnlyAccess`
 - `AWSCertificateManagerFullAccess` Used to create and manage SSL certificates for the app
+- `S3` // TBC
 
 In your mup config, set `app.auth.id` to the Access Key ID, and `app.auth.secret` to the Secret access key AWS gives you after creating the user.
  

@@ -1,5 +1,5 @@
 {
-  "name": "@settlin/mup-aws-beanstalk",
+  "name": "@sny7/mup-aws-beanstalk",
   "version": "1.1.2",
   "description": "Deploy apps to AWS Elastic Beanstalk using Meteor Up",
   "main": "index.js",
@@ -13,14 +13,14 @@
     "pretest": "npm run lint -s",
     "test": "mocha --require babel-register --require babel-polyfill ./tests/*.spec.js"
   },
-  "author": "zodern",
+  "author": "Henry Young",
   "license": "MIT",
   "keywords": [
     "meteor-up"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/settlin/mup-aws-beanstalk.git"
+    "url": "git+https://github.com/SNY7/mup-aws-beanstalk.git"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.1",
